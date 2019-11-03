@@ -10,15 +10,15 @@ require(lattice)
 library(maptools)
 library(rgdal)
 
-clust <- raster("L:/Boreal/InterannualVariability/boreal_ecoregions_drop.asc")
-prov <- rgdal::readOGR("I:/GIS/basemaps/province_state.shp")
-boreal <- rgdal::readOGR("L:/Boreal/InterannualVariability/boreal_ecoregions.shp")
-wintid <- raster("L:/Boreal/InterannualVariability/ceclevel2nsa1.tif")
+clust <- raster("G:/Boreal/InterannualVariability/boreal_ecoregions_drop.asc")
+prov <- rgdal::readOGR("E:/GIS/basemaps/province_state.shp")
+boreal <- rgdal::readOGR("G:/Boreal/InterannualVariability/boreal_ecoregions.shp")
+wintid <- raster("G:/Boreal/InterannualVariability/ceclevel2nsa1.tif")
 
 is_try_error <- function(x) inherits(x, "try-error")
 intersect <- function(x, y) y[match(x, y, nomatch = 0)]
 rainbow15 <- c("grey","black","brown","maroon","red","orange","yellow","lightgreen","green","darkgreen","turquoise","blue","purple","violet","pink")
-indices <- read.csv("L:/Boreal/InterannualVariability/nao_pdo_soi_amo_annual.csv")
+indices <- read.csv("G:/Boreal/InterannualVariability/nao_pdo_soi_amo_annual.csv")
 ind <- indices[,c(1:25,32:35,44:47)]
 
 diverge0 <- function(p, ramp) {
@@ -38,36 +38,35 @@ diverge0 <- function(p, ramp) {
   rng <- range(p$legend[[1]]$args$key$at)
   s <- seq(-max(abs(rng)), max(abs(rng)), len=1001)
   i <- findInterval(rng[which.min(abs(rng))], s)
-  zlim <- switch(which.min(abs(rng)), `1`=i:(1000+1), `2`=1:(i+1))
+  zlim <- switch(which.min(abs(rng)), `1`=F:(1000+1), `2`=1:(i+1))
   p$legend[[1]]$args$key$at <- s[zlim]
   p$par.settings$regions$col <- ramp(1000)[zlim[-length(zlim)]]
   p
 }
 
-
-speclist <- read.csv("I:/BAM/BAMData/SpeciesClassesModv5.csv")
-spec <- read.csv("I:/BAM/BAMData/species.csv")
+speclist <- read.csv("F:/BAM/BAMData/SpeciesClassesModv5.csv")
+spec <- read.csv("F:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
 speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
 speclist <- speclist[speclist$spp != "PIWA",]
 LDspec <- as.factor(as.character(speclist[speclist$DATABASE_MIG_TYPE=="LD",1]))
 
-zz <- read.csv("L:/Boreal/InterannualVariability/ClusterClimDat19912013_drop.csv")
+zz <- read.csv("G:/Boreal/InterannualVariability/ClusterClimDat19912013_drop.csv")
 zz <- zz[zz$YEAR > 2000,]
-ll <- read.csv("L:/Boreal/InterannualVariability/BreedingLanduseDat20012014_drop.csv")	
+ll <- read.csv("G:/Boreal/InterannualVariability/BreedingLanduseDat20012014_drop.csv")	
 ll <- ll[ll$YEAR > 2000,]
 names(ll) <- c("zone","forestchg","YEAR")
-yy <- read.csv("L:/Boreal/InterannualVariability/WinterLanduseDat20012014_CEC.csv")
+yy <- read.csv("G:/Boreal/InterannualVariability/WinterLanduseDat20012014_CEC.csv")
 
-ecolu <- read.csv("L:/Boreal/InterannualVariability/ecoregion_lu.csv") 
+ecolu <- read.csv("G:/Boreal/InterannualVariability/ecoregion_lu.csv") 
 ecolu$BorealLevel3 <- as.factor(as.character(ecolu$BorealLevel3))
 
 trend <- data.frame(SPECIES="",ecodrop=0,betaw=0, beta=0, intw=0, int=0, blcw=0, blc=0)
 trend <- trend[trend$ecodrop != 0,]
 	for (j in 1:length(LDspec)) {
 		for (k in ecolu$BorealLevel3) {	
-			    pred <- read.csv(paste("L:/Boreal/InterannualVariability/ecopred_1993-2013",LDspec[j],"2.csv",sep=""))
-				pred <- pred[pred$ecodrop==k,]
+			 pred <- read.csv(paste("G:/Boreal/InterannualVariability/ecopred_2000-2013",LDspec[j],"_update.csv",sep=""))
+			 pred <- pred[pred$ecodrop==k,]
 				pred <- pred[pred$YEAR > 2000,]
 				x1 <- try(trend.lm <- lm(pred$pred ~ pred$YEAR + pred$nalc, weights=pred$x))
 				x2 <- try(trend.lm2 <- lm(pred$pred ~ pred$YEAR + pred$nalc))
@@ -77,7 +76,7 @@ trend <- trend[trend$ecodrop != 0,]
 			}
 		}
 	}	
-write.csv(trend, file="L:/Boreal/InterannualVariability/trends_weighted_2000.csv", row.names=FALSE)
+write.csv(trend, file="G:/Boreal/InterannualVariability/trends_weighted_2000_update.csv", row.names=FALSE)
 
 
 for (j in 1:length(LDspec)) {
@@ -91,7 +90,6 @@ for (j in 1:length(LDspec)) {
 		plot1 <- levelplot(rc1, att='betaw', main = paste(LDspec[j], sep=" "), margin=FALSE) + layer(sp.polygons(prov))
 		#grid.arrange(diverge0(plot1,'RdBu'), ncol=1, nrow=1)
 	}	
-
 
 jultmin <- data.frame(jultmin="",zone=0,beta=0)
 jultmin <- jultmin[jultmin$zone != 0,]
@@ -152,7 +150,7 @@ juntmax <- juntmax[juntmax$zone != 0,]
 sample <- data.frame(ecodrop=0,count=0)
 sample <- sample[sample$ecodrop !=0,]
 for (k in ecolu$BorealLevel3) {	
-	pred <- read.csv(paste("L:/Boreal/InterannualVariability/ecopred_1993-2013",LDspec[1],"2.csv",sep=""))
+	pred <- read.csv(paste("G:/Boreal/InterannualVariability/ecopred_2000-2013",LDspec[1],"_update.csv",sep=""))
 	pred <- pred[pred$ecodrop==k,]
 	pred <- pred[pred$YEAR>2000,]
 	sample1 <- aggregate(pred$x, by=list(pred$ecodrop), FUN="sum")
@@ -167,10 +165,10 @@ rats <- merge(rats,sample,by.x="ID",by.y="ecodrop")
 levels(rs) <- rats
 rs1 <- deratify(rs,att='logcount')	
 plots <- levelplot(rs1,att='count',main="log(sample size)", margin=FALSE) + layer(sp.polygons(prov))
-pdf(file=paste("L:/Boreal/InterannualVariability/samplesize.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/samplesize_update.pdf",sep=""), height=7, width=10)
 plot(plots)
 dev.off()
-write.csv(sample, file="L:/Boreal/InterannualVariability/sample_2000.csv")
+write.csv(sample, file="G:/Boreal/InterannualVariability/sample_2000_update.csv")
 
 
 plote <- levelplot(rs,att='ID',main="ecoregions", margin=FALSE) + layer(sp.polygons(prov))
@@ -196,7 +194,7 @@ levels(rcfw) <- fcw
 fcw1 <- deratify(rcfw,att='forestchg')
 fcw1 <- trim(fcw1)
 plotfw <- levelplot(-1*fcw1, att='forestchg', main = "forest change", margin=FALSE) 
-pdf(file=paste("L:/Boreal/InterannualVariability/winter_forestloss_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/winter_forestloss_2000.pdf",sep=""), height=7, width=10)
 plot(plotfw)
 dev.off()
 
@@ -217,7 +215,7 @@ ccjultmax <- deratify(rcc,att='jultmax')
 plotjultmax <- levelplot(ccjultmax, att='jultmax', main = "jultmax change", margin=FALSE) + layer(sp.polygons(prov))
 
 
-pdf(file=paste("L:/Boreal/InterannualVariability/_trends_continuous_weighted_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/_trends_continuous_weighted_2000_update.pdf",sep=""), height=7, width=10)
 for (j in 1:length(LDspec)) {
 	spectrend <- trend[trend$SPECIES == LDspec[j],]
 	rc <- ratify(clust)
@@ -231,7 +229,7 @@ for (j in 1:length(LDspec)) {
 	}	
 	dev.off()
 	
-pdf(file=paste("L:/Boreal/InterannualVariability/trends_forestchg_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/trends_forestchg_2000_update.pdf",sep=""), height=7, width=10)
 par(mfcol=c(3,3), oma=c(0,0,0,0))
 for (j in 1:length(LDspec)) {
 	spectrend <- trend[trend$SPECIES == LDspec[j],]
@@ -242,14 +240,14 @@ for (j in 1:length(LDspec)) {
 }
 dev.off()
 
-pdf(file=paste("L:/Boreal/InterannualVariability/trends_forestchgcombo_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/trends_forestchgcombo_2000_update.pdf",sep=""), height=7, width=10)
 	tf <- merge(trend, forest, by.x="ecodrop",by.y="ID")
 	plot(tf$forestchg, tf$betaw, 	xlab="Forest loss proportion ", ylab="2001-2013 Trend")
 	lines(lowess(tf$forestchg,tf$betaw), col="blue") # lowess line (x,y)
 	abline(lm(tf$betaw~tf$forestchg), col="red") # regression line (y~x)
 dev.off()
 
-pdf(file=paste("L:/Boreal/InterannualVariability/trends_julmaxt_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/trends_julmaxt_2000_update.pdf",sep=""), height=7, width=10)
 par(mfcol=c(3,3), oma=c(0,0,0,0))
 for (j in 1:length(LDspec)) {
 	spectrend <- trend[trend$SPECIES == LDspec[j],]
@@ -260,7 +258,7 @@ for (j in 1:length(LDspec)) {
 }
 dev.off()
 
-pdf(file=paste("L:/Boreal/InterannualVariability/trends_junmint_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/trends_junmint_2000_update.pdf",sep=""), height=7, width=10)
 par(mfcol=c(3,3), oma=c(0,0,0,0))
 for (j in 1:length(LDspec)) {
 	spectrend <- trend[trend$SPECIES == LDspec[j],]
@@ -271,14 +269,14 @@ for (j in 1:length(LDspec)) {
 }
 dev.off()
 
-pdf(file=paste("L:/Boreal/InterannualVariability/trends_junmintcombo_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/trends_junmintcombo_2000_update.pdf",sep=""), height=7, width=10)
 	tf <- merge(trend, clim, by.x="ecodrop",by.y="ID")
 	plot(tf$juntmin, tf$betaw, 	xlab="June min temp change", ylab="2001-2013 Trend")
 	lines(lowess(tf$juntmin,tf$betaw), col="blue") # lowess line (x,y)
 	abline(lm(tf$betaw~tf$juntmin), col="red") # regression line (y~x) 
 dev.off()
 
-pdf(file=paste("L:/Boreal/InterannualVariability/trends_julmaxtcombo_2000.pdf",sep=""), height=7, width=10)
+pdf(file=paste("G:/Boreal/InterannualVariability/trends_julmaxtcombo_2000_update.pdf",sep=""), height=7, width=10)
 	tf <- merge(trend, clim, by.x="ecodrop",by.y="ID")
 	plot(tf$jultmax, tf$betaw, 	xlab="June min temp change", ylab="2001-2013 Trend")
 	lines(lowess(tf$jultmax,tf$betaw), col="blue") # lowess line (x,y)

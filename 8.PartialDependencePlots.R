@@ -9,21 +9,21 @@ library(gridExtra)
 
 is_try_error <- function(x) inherits(x, "try-error")
 
-speclist <- read.csv("I:/BAM/BAMData/SpeciesClassesModv5.csv")
-spec <- read.csv("I:/BAM/BAMData/species.csv")
+speclist <- read.csv("F:/BAM/BAMData/SpeciesClassesModv5.csv")
+spec <- read.csv("F:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
 speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
 speclist <- speclist[speclist$spp != "PIWA",]
 LDspec <- as.factor(as.character(speclist[speclist$DATABASE_MIG_TYPE=="LD",1]))
 
-indices <- read.csv("L:/Boreal/InterannualVariability/nao_pdo_soi_amo_annual.csv")
+indices <- read.csv("G:/Boreal/InterannualVariability/nao_pdo_soi_amo_annual.csv")
 ind <- indices[,c(1:25,32:35,44:47)]
-ecolu <- read.csv("L:/Boreal/InterannualVariability/ecoregion_lu.csv") 
+ecolu <- read.csv("G:/Boreal/InterannualVariability/ecoregion_lu.csv") 
 ecolu$BorealLevel3 <- as.factor(as.character(ecolu$BorealLevel3))
 
-pdf("L:/Boreal/InterannualVariability/_partialdependence.pdf")
+pdf("G:/Boreal/InterannualVariability/_partialdependence_update.pdf")
 for (j in 1:length(LDspec)) {
-	try(load(paste("L:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013_chg_eco.RData",sep="")))
+	try(load(paste("G:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013_chg_eco_update.RData",sep="")))
 	if(is.null(brt.chg)) {} else {
 	varimp <- as.data.frame(brt.chg$contributions)
 	grid.arrange(
@@ -52,10 +52,10 @@ for (j in 1:length(LDspec)) {
 	}	
 dev.off()
 
-pdf("L:/Boreal/InterannualVariability/_partialdependence_clust.pdf")
-clust <- list.files("L:/Boreal/InterannualVariability/", pattern="brt_2001-2013_chg_cluster.RData")
+pdf("G:/Boreal/InterannualVariability/_partialdependence_clust_update.pdf")
+clust <- list.files("G:/Boreal/InterannualVariability/", pattern="brt_2001-2013_chg_cluster_update.RData")
 for (j in 1:length(clust)) {
-	try(load(paste("L:/Boreal/InterannualVariability/",clust[j],sep="")))
+	try(load(paste("G:/Boreal/InterannualVariability/",clust[j],sep="")))
 	if(is.null(brt1)) {} else {
 	varimp <- as.data.frame(brt1$contributions)
 	grid.arrange(
@@ -84,9 +84,9 @@ for (j in 1:length(clust)) {
 	}	
 dev.off()
 
-pdf("L:/Boreal/InterannualVariability/_partialdependence_ice.pdf")
+pdf("G:/Boreal/InterannualVariability/_partialdependence_ice_update.pdf")
 for (j in 1:length(LDspec)) {
-	try(load(paste("L:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013_chg_eco.RData",sep="")))
+	try(load(paste("G:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013_chg_eco_update.RData",sep="")))
 	if(is.null(brt.chg)) {} else {
 	varimp <- as.data.frame(brt.chg$contributions)
 	grid.arrange(
