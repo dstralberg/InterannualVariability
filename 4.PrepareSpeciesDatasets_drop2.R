@@ -1,8 +1,7 @@
 library(raster)
 library(data.table)
-load("L:/Boreal/InterannualVariability/Summary19912013.RData")
-load("I:/BAM/BAMData/offsets-v3_2016-04-18.Rdata")
-indices <- read.csv("L:/Boreal/InterannualVariability/nao_pdo_soi_amo_annual.csv")
+load("G:/Boreal/InterannualVariability/Summary20002013.RData")
+indices <- read.csv("G:/Boreal/InterannualVariability/nao_pdo_soi_amo_annual.csv")
 library(reshape)
 library(stringr)
 require(maptree)
@@ -10,7 +9,7 @@ is_try_error <- function(x) inherits(x, "try-error")
 intersect <- function(x, y) y[match(x, y, nomatch = 0)]
 rainbow15 <- c("grey","black","brown","maroon","red","orange","yellow","lightgreen","green","darkgreen","turquoise","blue","purple","violet","pink")
 
-surveydate <- data.table(unique(PKEY[,c(1,2,8)]))
+surveydate <- data.table(unique(PKEYcombo))
 surveydate$YEAR <- as.factor(surveydate$YEAR)
 combo$ecodrop <- as.character(combo$ecodrop)
 combo1 <- combo[combo$nalc %in% c(1,2,5,6),]
@@ -19,32 +18,24 @@ combo1$nalc <- ifelse(combo1$nalc == 2, 1, combo1$nalc)
 combo1$nalc <- as.factor(as.character(combo1$nalc))
 combo1$ecodrop <- as.factor(combo1$ecodrop)
 
-XY <- base::unique(combo1[,c(3,5:6,10:53,58,60)])
-XY1 <- XY[!XY$ecodrop %in% c(7,10,11,45,46),]
+XY <- base::unique(combo1[,c(4:7,9:52,54,56)])
+XY1 <- XY[!XY$ecodrop %in% c(7,10,11,46),]
 XY1 <- data.table(XY1)
 XY1$ecodrop <- as.factor(as.character(XY1$ecodrop))
 XY1$YEAR <- as.factor(as.character(XY1$YEAR))
-clust <- raster("L:/Boreal/InterannualVariability/boreal_ecoregions_drop.asc")
-offl <- data.table(melt(OFF))
-names(offl) <- c("PKEY","SPECIES","logoffset")
-offl$SPECIES <- as.character(offl$SPECIES)
+clust <- raster("G:/Boreal/InterannualVariability/boreal_ecoregions_drop.asc")
+offcombo$SPECIES <- as.character(offcombo$SPECIES)
 
-speclist <- read.csv("I:/BAM/BAMData/SpeciesClassesModv5.csv")
-spec <- read.csv("I:/BAM/BAMData/species.csv")
+speclist <- read.csv("F:/BAM/BAMData/SpeciesClassesModv5.csv")
+spec <- read.csv("F:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
 speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
 LDspec <- as.factor(as.character(speclist[speclist$DATABASE_MIG_TYPE=="LD",1]))
 
-filter <- read.csv("L:/Boreal/InterannualVariability/variablefilters.csv")
+filter <- read.csv("G:/Boreal/InterannualVariability/variablefilters.csv")
 filter$cluster <- as.character(filter$cluster)
-speclist <- read.csv("I:/BAM/BAMData/SpeciesClassesModv5.csv")
-spec <- read.csv("I:/BAM/BAMData/species.csv")
-speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
-speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
-speclist <- speclist[speclist$spp != "PIWA",]
-LDspec <- as.factor(as.character(speclist[speclist$DATABASE_MIG_TYPE=="LD",1]))
 
-zz <- read.csv("L:/Boreal/InterannualVariability/ClusterClimDat19912013_drop.csv")
+zz <- read.csv("G:/Boreal/InterannualVariability/ClusterClimDat19912013_drop.csv")
 zz$zone <- as.character(zz$zone)
 names(zz)[1] <- "ecodrop"
 zz$YEAR <- as.integer(as.character(zz$YEAR))
@@ -55,14 +46,14 @@ zz$sepocttmin0 <- (zz$septmin0 + zz$octtmin0)/2
 zz$novmartmin <- (zz$novtmin0 + zz$dectmin0 + zz$jantmin1 + zz$febtmin1 + zz$martmin1)/5
 zz <- zz[,c(1:14,36,38:39,41:42,44:49)]
 
-ww <- read.csv("L:/Boreal/InterannualVariability/annclimDat19912013_CEC.csv")
+ww <- read.csv("G:/Boreal/InterannualVariability/annclimDat19912013_CEC.csv")
 ww$zone <- as.character(ww$zone)
 names(ww) <- paste(names(ww),"w",sep="")
 ww <- ww[,c(1,11,13,14,16,17,19,20,22,23,25,26,28,29,31,32,34,35,37,38,40,44)]
 
-yy <- read.csv("L:/Boreal/InterannualVariability/WinterLanduseDat20012014_CEC.csv")
+yy <- read.csv("G:/Boreal/InterannualVariability/WinterLanduseDat20012014_CEC.csv")
 
-ll <- read.csv("L:/Boreal/InterannualVariability/BreedingLanduseDat20012014_drop.csv")
+ll <- read.csv("G:/Boreal/InterannualVariability/BreedingLanduseDat20012014_drop.csv")
 ll$zone <- as.character(ll$zone)
 names(ll)[1] <- "ecodrop"
 ll$YEAR <- as.integer(as.character(ll$YEAR))
@@ -74,13 +65,13 @@ freqall <- melt(table(sample$ecodrop,sample$nalc))
 names(freqall) <- c("ecodrop","nalc","freq")
 
 for (j in 1:length(LDspec)) {
-	specdat <- data.table(PCTBL[PCTBL$SPECIES == as.character(LDspec[j]),2:5])
-	specdat$SS <- as.factor(specdat$SS)
-	specdat <- merge(surveydate, specdat, by = c("SS", "PKEY"), all.x=TRUE)
+	specdat <- data.table(PCcombo[PCcombo$SPECIES == as.character(LDspec[j]),])
+	#specdat$SS <- as.factor(specdat$SS)
+	specdat <- merge(surveydate, specdat, by = c("PKEY"), all.x=TRUE)
 	specdat <- merge(specdat, XY1, by = c("SS","YEAR"))
 	specdat$SPECIES <- as.character(LDspec[j])
 	specdat$ABUND <- as.integer(ifelse(is.na(specdat$ABUND),0,specdat$ABUND))
-	specdat <- merge(specdat,offl, by=c("SPECIES","PKEY"))
+	specdat <- merge(specdat,offcombo, by=c("SPECIES","PKEY"))
 	specdat$YEAR <- as.integer(as.character(specdat$YEAR))
 	specdat <- na.omit(specdat)
 	specdat$nalc <- as.factor(as.character(specdat$nalc))
@@ -93,7 +84,7 @@ for (j in 1:length(LDspec)) {
 	specdat$count <- 1
 	sample <- aggregate(specdat$count,by=list("ecodrop"=specdat$ecodrop,"nalc"=specdat$nalc,"YEAR"=specdat$YEAR),FUN=sum)
 	pred <- data.table(YEAR = character(),ecodrop = character(), nalc = character(), SPECIES = character(), pred=double())
-	for (i in 1993:2013) {
+	for (i in 2000:2013) {
 		yeardat <- specdat[specdat$YEAR == i,]
 		yeardat$ecocov <- interaction(yeardat$nalc, yeardat$ecodrop, drop=TRUE, sep="_")
 		n <- length(levels(as.factor(as.character(yeardat$ecodrop))))
@@ -128,9 +119,9 @@ for (j in 1:length(LDspec)) {
 	}
 	pred$YEAR <- as.integer(as.character(pred$YEAR))
 	pred <- merge(pred,sample,by=c("ecodrop","nalc","YEAR"))
-	write.csv(pred,file=paste("L:/Boreal/InterannualVariability/ecopred_1993-2013",LDspec[j],"2.csv",sep=""),row.names=FALSE)
+	write.csv(pred,file=paste("G:/Boreal/InterannualVariability/ecopred_2000-2013",LDspec[j],"_update.csv",sep=""),row.names=FALSE)
 	
-	f <- filter[filter$Species == LDspec[j],]
+	f <- filter[filter$Species == as.character(LDspec[j]),]
 	w <- merge(ww[,c(1,6:19,22)], f[,4:6], by.x = "zonew", by.y = "cluster")
 	w <- w[w$wintering > 0,]
 	w <- as.data.frame(w)
@@ -138,7 +129,7 @@ for (j in 1:length(LDspec)) {
 	w1 <- reshape(w, direction="wide", timevar="zonew", idvar="YEARw")
 	w1$YEARw <- as.integer(as.character(w1$YEARw))
 	
-	f <- filter[filter$Species == LDspec[j],]
+	# f <- filter[filter$Species == LDspec[j],]
 	m <- merge(ww[,c(1:5,20:22)], f[,4:6], by.x = "zonew", by.y = "cluster")
     m <- m[m$migration > 0,]
 	m <- as.data.frame(m)
@@ -161,6 +152,6 @@ for (j in 1:length(LDspec)) {
 	dat$nalc <- as.factor(dat$nalc)
 	dat <- merge(dat,y1,by="YEAR")
 	dat <- merge(dat,ll,by=c("YEAR","ecodrop"))
-	write.csv(dat, file=paste("L:/Boreal/InterannualVariability/predclim19932013",LDspec[j],"2.csv",sep=""), row.names=FALSE)
+	write.csv(dat, file=paste("G:/Boreal/InterannualVariability/predclim20002013",LDspec[j],"_update.csv",sep=""), row.names=FALSE)
 }
 
