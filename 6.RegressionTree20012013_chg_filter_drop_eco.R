@@ -33,6 +33,7 @@ spec <- read.csv("F:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
 speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
 speclist <- speclist[speclist$spp != "PIWA",]
+speclist <- speclist[speclist$spp != "YTVI",]
 LDspec <- as.factor(as.character(speclist[speclist$DATABASE_MIG_TYPE=="LD",1]))
 
 
@@ -52,25 +53,21 @@ for (j in 1:length(LDspec)) {
 	dat <- merge(dat,specmean,by=c("ecodrop","nalc"))
 	dat <- merge(dat,specsd,by=c("ecodrop","nalc"))
 	names(dat)[1] <- "eco"
-	datt <- dat
-	datt$YEAR <- dat$YEAR -1
-	x1 <- try(trend.lm <- lm(pred ~ eco:YEAR + nalc, data=dat, weights=x))
-	dat$pt <- predict(trend.lm, newdata=dat, type="response")
-	dat$pt1 <- predict(trend.lm, newdata=datt, type="response")
-	dat$chg <- log(dat$pred - dat$pt1 + 1)
-	dat$YEAR <- as.factor(as.character(dat$YEAR))
 	dat <- dat[dat$mean > 0.001,]
-	dat1 <- dat[,c(1:2,7:(ncol(dat)-5),ncol(dat))]
+	dat1 <- dat[,c(9,1:2,11:(ncol(dat)-2))]
 	dat1 <- na.omit(dat1)
-	try(brt1 <- gbm.step(dat1, gbm.y = ncol(dat1), gbm.x = c(1:(ncol(dat1)-1)), family = "gaussian", tree.complexity = 3, learning.rate = 0.001, bag.fraction = 0.5))
-	if(is.null(brt1)) {try(brt1 <- gbm.step(dat1, gbm.y = ncol(dat1), gbm.x = c(1:(ncol(dat1)-1)), family = "gaussian", tree.complexity = 3, learning.rate = 0.00001, bag.fraction = 0.5))}
+	try(brt1 <- gbm.step(dat1, gbm.y = 1, gbm.x = c(2:ncol(dat1)), family = "gaussian", tree.complexity = 3, learning.rate = 0.001, bag.fraction = 0.5))
+	if(is.null(brt1)) {try(brt.chg <- gbm.step(dat1, gbm.y = ncol(dat1), gbm.x = c(1:(ncol(dat1)-1)), family = "gaussian", tree.complexity = 3, learning.rate = 0.00001, bag.fraction = 0.5))}
 	try(save(brt1,file=paste("G:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013_chg_eco_update.RData",sep="")))	
 	varimp <- as.data.frame(brt1$contributions)
 	write.csv(varimp,file=paste("G:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013varimp_chg_eco_update.csv",sep=""))
 	cvstats <- as.data.frame(brt1$cv.statistics[c(1,3)])
+	names(cvstats) <- c("deviance.cv","correlation.cv")
 	cvstats$deviance.null <- brt1$self.statistics$mean.null
-	cvstats$deviance.exp <- (cvstats$deviance.null-cvstats$deviance.mean)/cvstats$deviance.null
-	write.csv(cvstats,file=paste("G:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013cvstats_chg_eco_update.csv",sep=""))
+	cvstats$pseudo.R2 <- (brt1$self.statistics$mean.null-brt1$self.statistics$mean.resid)/brt1$self.statistics$mean.null
+	cvstats$correlation <- brt1$self.statistics$correlation
+	cvstats$pseudo.R2.cv <- (cvstats$deviance.null-cvstats$deviance.cv)/cvstats$deviance.null
+	write.csv(cvstats,file=paste("G:/Boreal/InterannualVariability/",LDspec[j],"brt_2001-2013cv_chg_eco_update.csv",sep=""))
 }	
 
 varimplookup <- read.csv("G:/Boreal/InterannualVariability/_varimp_lookup_update.csv")
@@ -110,7 +107,7 @@ write.csv(combo, file="G:/Boreal/InterannualVariability/_BRTResults_eco_update.c
 cvstats <- read.csv(cv[1])
 names(cvstats) <- c("var",substr(cv[1],1,3))
 varimp <- read.csv(vi[1])
-varimp$spec <- substr(vi[1],1,5)
+varimp$spec <- substr(vi[1],1,4)
 varimp$R2 <- cvstats[3,2]
 for (j in 2:length(cv)) { 
 	t1 <- try(varimp1 <- read.csv(vi[j]), silent=TRUE)
@@ -120,7 +117,7 @@ for (j in 2:length(cv)) {
 		varimp1$R2 <- cvstats1[3,2]
 		varimp <- rbind(varimp,varimp1)}
 	if(class(t) == "try-error") {} else {
-		names(cvstats1) <- c("var",substr(cv[j],1,5))
+		names(cvstats1) <- c("var",substr(cv[j],1,4))
 		cvstats <- merge(cvstats,cvstats1, by="var")
 		}
 	}	

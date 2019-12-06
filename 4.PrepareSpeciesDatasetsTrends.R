@@ -29,6 +29,8 @@ speclist <- read.csv("F:/BAM/BAMData/SpeciesClassesModv5.csv")
 spec <- read.csv("F:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
 speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
+speclist <- speclist[speclist$spp != "PIWA",]
+speclist <- speclist[speclist$spp != "YTVI",]
 LDspec <- as.factor(as.character(speclist[speclist$DATABASE_MIG_TYPE=="LD",1]))
 
 filter <- read.csv("G:/Boreal/InterannualVariability/variablefilters.csv")
