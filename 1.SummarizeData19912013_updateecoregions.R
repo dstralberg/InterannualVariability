@@ -1,7 +1,7 @@
 library(raster)
 library(maptools)
 
-load("F:/BAM/BAMData/BAM_data_package_August2019.RData")	
+load("F:/BAM/BAMData/BAM_data_package_November2019.RData")	
 boreal <- raster("E:/GIS/basemaps/boreal_boundaries/naboreal4kmDD.asc")
 provstate <- rgdal::readOGR("E:/GIS/basemaps/province_state_line_DD.shp")
 id <- raster("E:/CRUTS31/new_anomalies/id.asc")
@@ -23,7 +23,7 @@ coordinates(SScombo) <- c("X", "Y")
 proj4string(SScombo) <- CRS(LCC)
 SSDD <- as.data.frame(spTransform(SScombo, DD))
 
-surveypts <- merge(SSDD,PKEYcombo, by="SS")
+surveypts <- merge(SSDD,PKEYmatch, by="SS")
 gridpoints <- rasterToPoints(id)
 
 # annclim1991 <- stack("G:/Boreal/InterannualVariability/annclim1991.grd")																
@@ -103,11 +103,11 @@ XY2013<-cbind(XY2013,extract(annclim2013,as.matrix(cbind(XY2013[,2],XY2013[,3]))
 climdat <- rbind(XY2000, XY2001, XY2002, XY2003, XY2004, XY2005, XY2006, XY2007, XY2008, XY2009, XY2010, XY2011, XY2012, XY2013)
 climdat$point <- 1		
 
-combo <- merge(PCcombo, climdat, by="PKEY")
+combo <- merge(PCmatch[,1:3], climdat, by="PKEY")
 speclist <- read.csv("F:/BAM/BAMData/SpeciesClassesModv5.csv")
 spec <- read.csv("F:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
-LDspec <- speclist[speclist$DATABASE_MIG_TYPE=="LD",c(1,8,17)]
+LDspec <- speclist[speclist$DATABASE_MIG_TYPE=="LD",c(1,10,19)]
 LDspec <- LDspec[LDspec$Boreal10==1,]
 combo <- merge(combo,LDspec[,1:2], by.x="SPECIES",by.y="spp")
 
@@ -129,7 +129,7 @@ combo$ecoregion <- as.factor(as.character(combo$ecoregion))
 
 combo <-cbind(combo,extract(ecoreg3,as.matrix(cbind(combo[,5],combo[,6]))))
 names(combo)[56] <- "ecodrop"
-combo$ecodrop <- as.factor(as.character(combo$ecodrop))
+combo$ecodrop <- as.factor(as.character(combo$ecodrop)) #n=1529973
 
 save.image("G:/Boreal/InterannualVariability/Summary20002013.RData")
 
