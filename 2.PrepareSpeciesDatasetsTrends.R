@@ -25,8 +25,8 @@ XY1$YEAR <- as.factor(as.character(XY1$YEAR))
 clust <- raster("G:/Boreal/InterannualVariability/boreal_ecoregions_drop.asc")
 offcombo$SPECIES <- as.character(offcombo$SPECIES)
 
-speclist <- read.csv("F:/BAM/BAMData/SpeciesClassesModv5.csv")
-spec <- read.csv("F:/BAM/BAMData/species.csv")
+speclist <- read.csv("D:/BAM/BAMData/SpeciesClassesModv5.csv")
+spec <- read.csv("D:/BAM/BAMData/species.csv")
 speclist <- merge(speclist,spec[,c(1,4)], by.x="spp", by.y="SPECIES")
 speclist$spp <- gsub("YWAR","YEWA",speclist$spp)
 speclist <- speclist[speclist$spp != "PIWA",]
